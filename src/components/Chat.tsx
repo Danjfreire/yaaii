@@ -12,7 +12,11 @@ interface Message {
     timestamp: Date;
 }
 
-export default function Chat() {
+interface ChatProps {
+    selectedModel: string;
+}
+
+export default function Chat({ selectedModel }: ChatProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
