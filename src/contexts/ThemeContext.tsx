@@ -10,7 +10,6 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    // Initialize directly from localStorage - no hydration issues in client components!
     const [isDarkMode, setIsDarkMode] = useState(false);
 
     useEffect(() => {
@@ -20,7 +19,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    // Apply theme immediately when it changes
     useEffect(() => {
         if (isDarkMode) {
             document.documentElement.classList.add('dark');

@@ -44,7 +44,7 @@ export default function Chat() {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-[calc(100vh-200px)] flex flex-col">
+        <div className="h-[calc(100vh-200px)] flex flex-col">
             {/* Chat Messages Area */}
             <div className="flex-1 p-6 overflow-y-auto">
                 <ChatMessages messages={messages} />
