@@ -13,11 +13,11 @@ interface Model {
 }
 
 interface ModelSelectorProps {
-    selectedModel: string;
     onModelSelect: (modelName: string) => void;
 }
 
-export default function ModelSelector({ selectedModel, onModelSelect }: ModelSelectorProps) {
+export default function ModelSelector({ onModelSelect }: ModelSelectorProps) {
+    const [selectedModel, setSelectedModel] = useState<string>('');
     const [models, setModels] = useState<Model[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,9 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
             if (data.success) {
                 setModels(data.models);
                 // Auto-select first model if none selected
+                // TODO: cache last selected model in localStorage and try to restore it here if possible
                 if (data.models.length > 0 && !selectedModel) {
+                    setSelectedModel(data.models[0].name);
                     onModelSelect(data.models[0].name);
                 }
             } else {
@@ -54,9 +56,6 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
     if (loading) {
         return (
             <div className="mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Model
-                </h3>
                 <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-10 rounded-lg"></div>
             </div>
         );
@@ -65,9 +64,6 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
     if (error) {
         return (
             <div className="mb-4">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Model
-                </h3>
                 <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
                     {error}
                 </div>
@@ -83,9 +79,6 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
 
     return (
         <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Model
-            </h3>
             <select
                 value={selectedModel}
                 onChange={(e) => onModelSelect(e.target.value)}

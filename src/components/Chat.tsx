@@ -22,6 +22,7 @@ export default function Chat({ selectedModel }: ChatProps) {
 
     const handleSendMessage = async (messageText: string) => {
         // Add user message immediately
+        console.log("Selected model:", selectedModel);
         const userMessage: Message = {
             id: Date.now().toString(),
             text: messageText,
