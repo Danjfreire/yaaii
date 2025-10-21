@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { ModelsApiResponse, ModelsApiError, OllamaModel } from '@/types/model';
 
-export async function GET() {
+export async function GET(): Promise<NextResponse<ModelsApiResponse | ModelsApiError>> {
     try {
         // Call Ollama's API to get available models
         const response = await fetch('http://localhost:11434/api/tags', {
@@ -16,19 +17,17 @@ export async function GET() {
 
         const data = await response.json();
 
-        // console.log('Fetched Ollama models:', data);
-        // for (const model of data.models) {
-        //     console.log(`Model: ${model.name}, Details: ${JSON.stringify(model.details)}`);
-        // }
+        // Type the response from Ollama
+        const ollamaModels: OllamaModel[] = data.models || [];
 
-        return NextResponse.json({
+        return NextResponse.json<ModelsApiResponse>({
             success: true,
-            models: data.models || [],
+            models: ollamaModels,
         });
     } catch (error) {
         console.error('Error fetching Ollama models:', error);
 
-        return NextResponse.json(
+        return NextResponse.json<ModelsApiError>(
             {
                 success: false,
                 error: 'Failed to connect to Ollama. Make sure Ollama is running on localhost:11434'

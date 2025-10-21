@@ -14,7 +14,7 @@ export default function Home() {
       <main className="flex-1 p-4">
         {/* Header */}
         <div className='flex justify-start'>
-          <ModelSelector onModelSelect={setSelectedModel} />
+          <ModelSelector selectedModel={selectedModel} onModelSelect={setSelectedModel} />
         </div>
 
         <div className="max-w-4xl mx-auto h-full">

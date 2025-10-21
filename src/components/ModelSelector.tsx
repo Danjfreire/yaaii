@@ -1,24 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-interface Model {
-    name: string;
-    size: number;
-    modified_at: string;
-    details: {
-        parameter_size: string;
-        quantization_level: string;
-    }
-}
+import { OllamaModel, isModelsApiSuccess } from '@/types/model';
+import { ApiClient } from '@/lib/api-client';
 
 interface ModelSelectorProps {
+    selectedModel: string;
     onModelSelect: (modelName: string) => void;
 }
 
-export default function ModelSelector({ onModelSelect }: ModelSelectorProps) {
-    const [selectedModel, setSelectedModel] = useState<string>('');
-    const [models, setModels] = useState<Model[]>([]);
+export default function ModelSelector({ selectedModel, onModelSelect }: ModelSelectorProps) {
+    const [models, setModels] = useState<OllamaModel[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -31,15 +23,13 @@ export default function ModelSelector({ onModelSelect }: ModelSelectorProps) {
             setLoading(true);
             setError(null);
 
-            const response = await fetch('/api/ollama/models');
-            const data = await response.json();
+            const data = await ApiClient.getModels();
 
-            if (data.success) {
+            if (isModelsApiSuccess(data)) {
                 setModels(data.models);
                 // Auto-select first model if none selected
                 // TODO: cache last selected model in localStorage and try to restore it here if possible
                 if (data.models.length > 0 && !selectedModel) {
-                    setSelectedModel(data.models[0].name);
                     onModelSelect(data.models[0].name);
                 }
             } else {
@@ -86,7 +76,7 @@ export default function ModelSelector({ onModelSelect }: ModelSelectorProps) {
             >
                 {models.map((model) => (
                     <option key={model.name} value={model.name}>
-                        {model.name} - {model.details.parameter_size}
+                        {model.name}{model.details?.parameter_size ? ` - ${model.details.parameter_size}` : ''}
                     </option>
                 ))}
             </select>
