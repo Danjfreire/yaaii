@@ -5,7 +5,7 @@ import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import ChatLoading from './ChatLoading';
 import { ApiClient } from '@/lib/api-client';
-import { ChatCompleteChunk, ChatMessage, OllamaMessage } from '@/types/chat';
+import { ChatChunk, ChatCompleteChunk, ChatMessage, OllamaMessage } from '@/types/chat';
 
 interface ChatProps {
     selectedModel: string;
@@ -14,7 +14,7 @@ interface ChatProps {
 export default function Chat({ selectedModel }: ChatProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isStreamingMode, setIsStreamingMode] = useState(false);
+    const [isStreamingMode, setIsStreamingMode] = useState(true); // Enable streaming by default
 
     const handleSendMessage = async (messageText: string) => {
         // Add user message immediately
@@ -29,32 +29,63 @@ export default function Chat({ selectedModel }: ChatProps) {
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
 
-        const res = await ApiClient.chat({
-            messages: messages,
-            model: selectedModel,
-            stream: isStreamingMode
-        });
+        try {
+            if (isStreamingMode) {
+                // Use streaming API
+                console.log("Starting streaming chat...");
+                let message = '';
 
-        console.log("Chat API response:", res);
+                await ApiClient.chatStreaming(
+                    {
+                        messages: [...messages, userMessage],
+                        model: selectedModel,
+                        stream: true
+                    },
+                    (chunk) => {
+                        // Log each chunk to console
+                        console.log("Received message chunk:", chunk.message.content);
 
-        if (!res.success) {
-            // Handle error
-            return;
+                        message += chunk.message.content;
+
+                        // Check if this is the final chunk
+                        if (chunk.done) {
+                            console.log("Streaming complete!");
+                            handleCompleteMessage(message);
+                        }
+                    }
+                );
+            } else {
+                // Use non-streaming API (fallback)
+                const res = await ApiClient.chat({
+                    messages: [...messages, userMessage],
+                    model: selectedModel,
+                    stream: false
+                });
+
+                console.log("Chat API response:", res);
+
+                if (!res.success) {
+                    console.error("Chat API error:", res.error);
+                    setIsLoading(false);
+                    return;
+                }
+
+                if (res.chunk.done) {
+                    handleCompleteMessage(res.chunk.message.content);
+                }
+            }
+        } catch (error) {
+            console.error("Error during chat:", error);
+            setIsLoading(false);
         }
-
-        // TODO: Handle streaming and complete response properly
-        if (res.chunk.done) {
-            handleCompleteMessage(res.chunk as ChatCompleteChunk);
-        }
-
     };
 
-    const handleCompleteMessage = (msg: ChatCompleteChunk) => {
+    const handleCompleteMessage = (content: string) => {
         const assitantMessage: ChatMessage = {
             id: crypto.randomUUID(),
-            content: msg.message.content,
+            content,
             role: 'assistant',
-            createdAt: new Date(msg.created_at)
+            createdAt: new Date()
         };
 
         setMessages(prev => [...prev, assitantMessage]);
