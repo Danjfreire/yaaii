@@ -3,10 +3,11 @@ import ChatMessage from './ChatMessage';
 
 interface ChatMessagesProps {
     messages: Message[];
+    streamingMessage?: Message | null;
 }
 
-export default function ChatMessages({ messages }: ChatMessagesProps) {
-    if (messages.length === 0) {
+export default function ChatMessages({ messages, streamingMessage }: ChatMessagesProps) {
+    if (messages.length === 0 && !streamingMessage) {
         return (
             <div className="text-center text-gray-500 dark:text-gray-400 mt-20">
                 <p>Welcome! Start a conversation with your AI assistant.</p>
@@ -25,6 +26,15 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
                     timestamp={message.createdAt}
                 />
             ))}
+            {streamingMessage && (
+                <ChatMessage
+                    key={`streaming-${streamingMessage.id}`}
+                    message={streamingMessage.content}
+                    isUser={false}
+                    timestamp={streamingMessage.createdAt}
+                    isStreaming={true}
+                />
+            )}
         </div>
     );
 }

@@ -15,6 +15,7 @@ export default function Chat({ selectedModel }: ChatProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isStreamingMode, setIsStreamingMode] = useState(true); // Enable streaming by default
+    const [streamingMessage, setStreamingMessage] = useState<ChatMessage | null>(null);
 
     const handleSendMessage = async (messageText: string) => {
         // Add user message immediately
@@ -31,9 +32,18 @@ export default function Chat({ selectedModel }: ChatProps) {
 
         try {
             if (isStreamingMode) {
-                // Use streaming API
-                console.log("Starting streaming chat...");
-                let message = '';
+
+                // Create initial streaming message
+                const initialStreamingMessage: ChatMessage = {
+                    id: crypto.randomUUID(),
+                    content: '',
+                    role: 'assistant',
+                    createdAt: new Date()
+                };
+                setStreamingMessage(initialStreamingMessage);
+
+                // Keep track of accumulated content
+                let accumulatedContent = '';
 
                 await ApiClient.chatStreaming(
                     {
@@ -42,20 +52,25 @@ export default function Chat({ selectedModel }: ChatProps) {
                         stream: true
                     },
                     (chunk) => {
-                        // Log each chunk to console
-                        console.log("Received message chunk:", chunk.message.content);
+                        accumulatedContent += chunk.message.content;
 
-                        message += chunk.message.content;
+                        // Update streaming message with accumulated content
+                        setStreamingMessage(prev => {
+                            if (!prev) return null;
+                            return {
+                                ...prev,
+                                content: accumulatedContent
+                            };
+                        });
 
-                        // Check if this is the final chunk
                         if (chunk.done) {
                             console.log("Streaming complete!");
-                            handleCompleteMessage(message);
+                            console.log("Final accumulated content:", accumulatedContent);
+                            handleCompleteMessage(accumulatedContent, initialStreamingMessage);
                         }
                     }
                 );
             } else {
-                // Use non-streaming API (fallback)
                 const res = await ApiClient.chat({
                     messages: [...messages, userMessage],
                     model: selectedModel,
@@ -77,18 +92,41 @@ export default function Chat({ selectedModel }: ChatProps) {
         } catch (error) {
             console.error("Error during chat:", error);
             setIsLoading(false);
+            setStreamingMessage(null); // Clean up streaming message on error
         }
     };
 
-    const handleCompleteMessage = (content: string) => {
-        const assitantMessage: ChatMessage = {
-            id: crypto.randomUUID(),
-            content,
-            role: 'assistant',
-            createdAt: new Date()
-        };
+    const handleCompleteMessage = (content?: string, messageTemplate?: ChatMessage) => {
+        console.log("handleCompleteMessage called with:", { content, messageTemplate, streamingMessage });
 
-        setMessages(prev => [...prev, assitantMessage]);
+        if (messageTemplate && content) {
+            // Convert streaming message to completed message using the template
+            const finalMessage: ChatMessage = {
+                ...messageTemplate,
+                content: content
+            };
+            console.log("Converting streaming message to final:", finalMessage);
+            setMessages(prev => [...prev, finalMessage]);
+            setStreamingMessage(null);
+        } else if (streamingMessage) {
+            const finalMessage: ChatMessage = {
+                ...streamingMessage,
+                content: content || streamingMessage.content
+            };
+            console.log("Converting streaming message to final (fallback):", finalMessage);
+            setMessages(prev => [...prev, finalMessage]);
+            setStreamingMessage(null);
+        } else if (content) {
+            // Non-streaming mode
+            const assistantMessage: ChatMessage = {
+                id: crypto.randomUUID(),
+                content,
+                role: 'assistant',
+                createdAt: new Date()
+            };
+            setMessages(prev => [...prev, assistantMessage]);
+        }
+
         setIsLoading(false);
     };
 
@@ -96,8 +134,11 @@ export default function Chat({ selectedModel }: ChatProps) {
         <div className="h-[calc(100vh-200px)] flex flex-col">
             {/* Chat Messages Area */}
             <div className="flex-1 p-6 overflow-y-auto">
-                <ChatMessages messages={messages} />
-                {isLoading && <ChatLoading />}
+                <ChatMessages
+                    messages={messages}
+                    streamingMessage={streamingMessage}
+                />
+                {isLoading && !streamingMessage && <ChatLoading />}
             </div>
 
             {/* Chat Input Area */}
