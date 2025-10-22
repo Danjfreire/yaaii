@@ -17,7 +17,7 @@ export default function Home() {
           <ModelSelector selectedModel={selectedModel} onModelSelect={setSelectedModel} />
         </div>
 
-        <div className="max-w-4xl mx-auto h-full">
+        <div className="max-w-4xl mx-auto">
           <Chat selectedModel={selectedModel} />
         </div>
       </main>

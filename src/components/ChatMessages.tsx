@@ -1,11 +1,5 @@
+import { ChatMessage as Message } from '@/types/chat';
 import ChatMessage from './ChatMessage';
-
-interface Message {
-    id: string;
-    text: string;
-    isUser: boolean;
-    timestamp: Date;
-}
 
 interface ChatMessagesProps {
     messages: Message[];
@@ -26,9 +20,9 @@ export default function ChatMessages({ messages }: ChatMessagesProps) {
             {messages.map((message) => (
                 <ChatMessage
                     key={message.id}
-                    message={message.text}
-                    isUser={message.isUser}
-                    timestamp={message.timestamp}
+                    message={message.content}
+                    isUser={message.role === 'user'}
+                    timestamp={message.createdAt}
                 />
             ))}
         </div>

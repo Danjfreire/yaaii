@@ -4,48 +4,61 @@ import { useState } from 'react';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import ChatLoading from './ChatLoading';
-
-interface Message {
-    id: string;
-    text: string;
-    isUser: boolean;
-    timestamp: Date;
-}
+import { ApiClient } from '@/lib/api-client';
+import { ChatCompleteChunk, ChatMessage, OllamaMessage } from '@/types/chat';
 
 interface ChatProps {
     selectedModel: string;
 }
 
 export default function Chat({ selectedModel }: ChatProps) {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isStreamingMode, setIsStreamingMode] = useState(false);
 
     const handleSendMessage = async (messageText: string) => {
         // Add user message immediately
         console.log("Selected model:", selectedModel);
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: messageText,
-            isUser: true,
-            timestamp: new Date(),
+        const userMessage: ChatMessage = {
+            id: crypto.randomUUID(),
+            content: messageText,
+            role: 'user',
+            createdAt: new Date()
         };
 
         setMessages(prev => [...prev, userMessage]);
         setIsLoading(true);
 
-        // TODO: Here we'll implement the Ollama API call
-        // For now, let's simulate a response
-        setTimeout(() => {
-            const aiMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                text: "This is a placeholder response. Soon this will be connected to Ollama!",
-                isUser: false,
-                timestamp: new Date(),
-            };
+        const res = await ApiClient.chat({
+            messages: messages,
+            model: selectedModel,
+            stream: isStreamingMode
+        });
 
-            setMessages(prev => [...prev, aiMessage]);
-            setIsLoading(false);
-        }, 1000);
+        console.log("Chat API response:", res);
+
+        if (!res.success) {
+            // Handle error
+            return;
+        }
+
+        // TODO: Handle streaming and complete response properly
+        if (res.chunk.done) {
+            handleCompleteMessage(res.chunk as ChatCompleteChunk);
+        }
+
+    };
+
+    const handleCompleteMessage = (msg: ChatCompleteChunk) => {
+        const assitantMessage: ChatMessage = {
+            id: crypto.randomUUID(),
+            content: msg.message.content,
+            role: 'assistant',
+            createdAt: new Date(msg.created_at)
+        };
+
+        setMessages(prev => [...prev, assitantMessage]);
+        setIsLoading(false);
     };
 
     return (

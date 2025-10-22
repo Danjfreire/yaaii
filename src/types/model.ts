@@ -1,4 +1,3 @@
-// Types for Ollama API responses
 export interface OllamaModel {
   name: string;
   size: number;
@@ -13,7 +12,6 @@ export interface OllamaModel {
   };
 }
 
-// API Response types for our Next.js endpoints
 export interface ModelsApiResponse {
   success: true;
   models: OllamaModel[];
