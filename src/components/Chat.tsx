@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import ChatLoading from './ChatLoading';
@@ -16,6 +16,27 @@ export default function Chat({ selectedModel }: ChatProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isStreamingMode, setIsStreamingMode] = useState(true); // Enable streaming by default
     const [streamingMessage, setStreamingMessage] = useState<ChatMessage | null>(null);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    // Function to scroll to bottom smoothly
+    const scrollToBottom = () => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Auto-scroll when messages change
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    // Auto-scroll during streaming when streamingMessage content changes
+    useEffect(() => {
+        scrollToBottom();
+    }, [streamingMessage?.content]);
 
     const handleSendMessage = async (messageText: string) => {
         // Add user message immediately
@@ -133,7 +154,10 @@ export default function Chat({ selectedModel }: ChatProps) {
     return (
         <div className="h-[calc(100vh-200px)] flex flex-col">
             {/* Chat Messages Area */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div
+                ref={chatContainerRef}
+                className="flex-1 p-6 overflow-y-auto"
+            >
                 <ChatMessages
                     messages={messages}
                     streamingMessage={streamingMessage}
