@@ -9,7 +9,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState<string>('');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#212121] flex flex-row">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#18181A] flex flex-row">
       <Sidebar />
       <main className="flex-1 p-4">
         {/* Header */}
@@ -17,7 +17,7 @@ export default function Home() {
           <ModelSelector selectedModel={selectedModel} onModelSelect={setSelectedModel} />
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Chat selectedModel={selectedModel} />
         </div>
       </main>
