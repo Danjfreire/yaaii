@@ -152,11 +152,11 @@ export default function Chat({ selectedModel }: ChatProps) {
     };
 
     return (
-        <div className="h-[calc(100vh-200px)] flex flex-col">
+        <div className="h-[calc(100vh-100px)] flex flex-col">
             {/* Chat Messages Area */}
             <div
                 ref={chatContainerRef}
-                className="flex-1 p-6 overflow-y-auto"
+                className="flex-1 p-6 overflow-y-auto hide-scrollbar"
             >
                 <ChatMessages
                     messages={messages}
@@ -166,7 +166,7 @@ export default function Chat({ selectedModel }: ChatProps) {
             </div>
 
             {/* Chat Input Area */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="border-t border-gray-200 dark:border-[#303030] p-4">
                 <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
             </div>
         </div>

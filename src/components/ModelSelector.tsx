@@ -46,7 +46,7 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
     if (loading) {
         return (
             <div className="mb-4">
-                <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-10 rounded-lg"></div>
+                <div className="animate-pulse bg-gray-200 dark:dark:bg-[#303030] h-10 rounded-lg"></div>
             </div>
         );
     }
@@ -72,7 +72,7 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
             <select
                 value={selectedModel}
                 onChange={(e) => onModelSelect(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 bg-white dark:dark:bg-[#303030] border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-700 text-gray-900 dark:text-white"
             >
                 {models.map((model) => (
                     <option key={model.name} value={model.name}>
