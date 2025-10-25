@@ -10,9 +10,9 @@ export default function ChatMessage({ message, isUser, timestamp, isStreaming = 
     return (
         <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
             <div
-                className={`max-w-[70%] rounded-lg px-4 py-2 ${isUser
-                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white'
-                    : 'bg-gray-100 dark:bg-[#303030] text-gray-900 dark:text-white'
+                className={`rounded-lg px-4 py-2 ${isUser
+                    ? 'bg-gray-300 dark:bg-[#303030] text-gray-800 dark:text-white max-w-[70%]'
+                    : 'bg-transparent text-gray-900 dark:text-white'
                     }`}
             >
                 <div className="text-base flex items-end">
