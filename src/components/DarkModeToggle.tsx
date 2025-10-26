@@ -3,20 +3,25 @@
 import { useTheme } from '@/contexts/ThemeContext';
 import { Moon, Sun } from 'lucide-react';
 
-export default function DarkModeToggle() {
+export interface DarkModeToggleProps {
+    className?: string
+}
+
+export default function DarkModeToggle({ className = '' }: DarkModeToggleProps) {
     const { isDarkMode, toggleDarkMode } = useTheme();
 
     return (
-        <button
+        <div
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className={`w-8 h-8 flex items-center justify-center p-1 hover:cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 hover:text-white hover:bg-[#303030] transition-colors ${className} group`}
             aria-label="Toggle dark mode"
         >
             {isDarkMode ? (
-                <Sun className="w-5 h-5 " />
+                <Sun className='w-5 h-5' />
             ) : (
-                <Moon className="w-5 h-5 text-gray-500" />
+                <Moon className="text-gray-500 group-hover:text-white" />
             )}
-        </button>
+        </div>
+
     );
 }

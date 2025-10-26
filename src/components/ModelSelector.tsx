@@ -45,7 +45,7 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
 
     if (loading) {
         return (
-            <div className="mb-4">
+            <div className="">
                 <div className="animate-pulse bg-gray-200 dark:dark:bg-[#303030] h-10 rounded-lg"></div>
             </div>
         );
@@ -53,7 +53,7 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
 
     if (error) {
         return (
-            <div className="mb-4">
+            <div className="">
                 <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
                     {error}
                 </div>
@@ -68,7 +68,7 @@ export default function ModelSelector({ selectedModel, onModelSelect }: ModelSel
     }
 
     return (
-        <div className="mb-4">
+        <div className="">
             <select
                 value={selectedModel}
                 onChange={(e) => onModelSelect(e.target.value)}
