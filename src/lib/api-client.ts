@@ -1,7 +1,27 @@
-import { ChatApiResponse, ChatApiResult, ChatChunk, OllamaChatRequestBody } from '@/types/chat';
+import { ChatApiResponse, ChatApiResult, ChatChunk, OllamaChatRequestBody } from '@/types/ollama-chat';
 import { ModelsApiResult } from '@/types/model';
+import { Chat } from '@/types/chat';
 
 export class ApiClient {
+    /**
+     * Fetch available chats from history
+     */
+    static async getChats(): Promise<Chat[]> {
+        try {
+            const response = await fetch('/api/chat');
+
+            if (!response.ok) {
+                console.error(`HTTP ${response.status}: ${response.statusText}`);
+                return [];
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error('Failed to fetch chats:', error);
+            return [];
+        }
+    }
+
     /**
      * Fetch available Ollama models
      */

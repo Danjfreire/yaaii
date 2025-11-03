@@ -3,6 +3,8 @@
 import { PanelRight } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import SidebarToggle from './SidebarToggle';
+import ChatList from './ChatList';
+import { Chat } from '@/types/chat';
 
 interface SidebarProps {
     className?: string;
@@ -10,6 +12,7 @@ interface SidebarProps {
     isMobile?: boolean;
     isCollapsed?: boolean;
     onToggleCollapse?: () => void;
+    onSelectChat?: (chat: Chat) => void;
 }
 
 export default function Sidebar({
@@ -17,7 +20,8 @@ export default function Sidebar({
     onClose,
     isMobile = false,
     isCollapsed = false,
-    onToggleCollapse
+    onToggleCollapse,
+    onSelectChat
 }: SidebarProps) {
     // Calculate width based on collapsed state
     const sidebarWidth = isCollapsed ? 'w-[64px]' : 'w-[250px]';
@@ -64,6 +68,9 @@ export default function Sidebar({
                     </div>
                 </div>
             )}
+
+            {/* Chat History */}
+            <ChatList isCollapsed={isCollapsed} onSelectChat={onSelectChat} />
 
             {/* Dark Mode Toggle */}
             <DarkModeToggle className={`mt-auto ${isCollapsed ? 'mt-auto' : 'ml-auto'}`} />

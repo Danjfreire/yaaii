@@ -5,7 +5,7 @@ import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import ChatLoading from './ChatLoading';
 import { ApiClient } from '@/lib/api-client';
-import { ChatChunk, ChatCompleteChunk, ChatMessage, OllamaMessage } from '@/types/chat';
+import { ChatChunk, ChatCompleteChunk, ChatMessage, OllamaMessage } from '@/types/ollama-chat';
 
 interface ChatProps {
     selectedModel: string;

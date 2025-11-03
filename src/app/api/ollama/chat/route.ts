@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ChatApiError, ChatApiResponse, ChatChunk, OllamaChatRequestBody } from '@/types/chat';
+import { ChatApiError, ChatApiResponse, ChatChunk, OllamaChatRequestBody } from '@/types/ollama-chat';
 
 export async function POST(request: Request) {
     try {

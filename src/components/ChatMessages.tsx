@@ -1,4 +1,4 @@
-import { ChatMessage as Message } from '@/types/chat';
+import { ChatMessage as Message } from '@/types/ollama-chat';
 import ChatMessage from './ChatMessage';
 
 interface ChatMessagesProps {
