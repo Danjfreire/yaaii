@@ -1,6 +1,7 @@
 'use client';
 
-import { PanelRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { PanelRight, Plus } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import SidebarToggle from './SidebarToggle';
 import ChatHistory from './ChatHistory';
@@ -23,6 +24,8 @@ export default function Sidebar({
     onToggleCollapse,
     onSelectChat
 }: SidebarProps) {
+    const router = useRouter();
+
     // Calculate width based on collapsed state
     const sidebarWidth = isCollapsed ? 'w-[64px]' : 'w-[250px]';
 
@@ -36,6 +39,13 @@ export default function Sidebar({
             onToggleCollapse();
         }
     }
+
+    const handleNewChat = () => {
+        router.push('/');
+        if (isMobile && onClose) {
+            onClose();
+        }
+    };
 
     return (
         <div className={`
@@ -68,6 +78,16 @@ export default function Sidebar({
                     </div>
                 </div>
             )}
+
+            {/* New Chat Button */}
+            <button
+                onClick={handleNewChat}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors mb-4 ${isCollapsed ? 'justify-center p-2' : ''}`}
+                title="Start a new chat"
+            >
+                <Plus className="w-5 h-5 shrink-0" />
+                {!isCollapsed && <span>New Chat</span>}
+            </button>
 
             {/* Chat History */}
             <ChatHistory isCollapsed={isCollapsed} onSelectChat={onSelectChat} />

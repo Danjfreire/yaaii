@@ -11,16 +11,37 @@ import { useChatContext } from '@/contexts/ChatContext';
 interface ChatProps {
     selectedModel: string;
     chatId?: string;
+    initialMessage?: string;
 }
 
-export default function Chat({ selectedModel }: ChatProps) {
+export default function Chat({ selectedModel, chatId: initialChatId, initialMessage }: ChatProps) {
     const { triggerChatListRefresh } = useChatContext();
-    const [chatId, setChatId] = useState<string | undefined>(undefined);
+    const [chatId, setChatId] = useState<string | undefined>(initialChatId);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isStreamingMode, setIsStreamingMode] = useState(true); // Enable streaming by default
     const [streamingMessage, setStreamingMessage] = useState<ChatMessage | null>(null);
+    const [initialMessageSent, setInitialMessageSent] = useState(false);
     const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    // Initialize chatId from props when component mounts or props change
+    useEffect(() => {
+        if (initialChatId && initialChatId !== chatId) {
+            setChatId(initialChatId);
+            // Clear messages when switching chats
+            setMessages([]);
+            setStreamingMessage(null);
+            setInitialMessageSent(false);
+        }
+    }, [initialChatId]);
+
+    // Send initial message if provided
+    useEffect(() => {
+        if (initialMessage && !initialMessageSent && chatId && selectedModel) {
+            setInitialMessageSent(true);
+            handleSendMessage(initialMessage);
+        }
+    }, [initialMessage, chatId, selectedModel, initialMessageSent]);
 
     // Function to scroll to bottom smoothly
     const scrollToBottom = () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Chat } from '@/types/chat';
 import { ApiClient } from '@/lib/api-client';
 import { MessageCircle, Loader2 } from 'lucide-react';
@@ -12,10 +13,18 @@ interface ChatListProps {
 }
 
 export default function ChatHistory({ isCollapsed = false, onSelectChat }: ChatListProps) {
+    const router = useRouter();
     const { onChatListRefresh } = useChatContext();
     const [chats, setChats] = useState<Chat[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const handleChatClick = (chat: Chat) => {
+        // Call the callback if provided
+        onSelectChat?.(chat);
+        // Navigate to the chat
+        router.push(`/chat/${chat.id}`);
+    };
 
     const fetchChats = async () => {
         try {
@@ -75,7 +84,7 @@ export default function ChatHistory({ isCollapsed = false, onSelectChat }: ChatL
                 {chats.map((chat) => (
                     <button
                         key={chat.id}
-                        onClick={() => onSelectChat?.(chat)}
+                        onClick={() => handleChatClick(chat)}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-[#2a2a2e] transition-colors group text-left"
                     >
                         <MessageCircle className="w-4 h-4 text-gray-600 dark:text-gray-400 shrink-0" />

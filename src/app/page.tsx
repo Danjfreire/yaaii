@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Chat from '@/components/Chat';
+import WelcomeInput from '@/components/WelcomeInput';
 import Sidebar from '@/components/Sidebar';
 import ModelSelector from '@/components/ModelSelector';
-import { PanelRight } from 'lucide-react';
 import SidebarToggle from '@/components/SidebarToggle';
+import { Chat as ChatType } from '@/types/chat';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -26,6 +28,11 @@ export default function Home() {
     };
   }, [isMobileMenuOpen]);
 
+  const handleSelectChat = (chat: ChatType) => {
+    router.push(`/chat/${chat.id}`);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#18181A] flex flex-row">
       {/* Desktop Sidebar */}
@@ -33,6 +40,7 @@ export default function Home() {
         className="hidden md:flex"
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onSelectChat={handleSelectChat}
       />
 
       {/* Mobile Overlay Sidebar */}
@@ -59,13 +67,14 @@ export default function Home() {
             `}
             onClose={() => setIsMobileMenuOpen(false)}
             isMobile={true}
+            onSelectChat={handleSelectChat}
           />
         </div>
       </div>
 
       <main className="flex-1 p-4">
         {/* Header */}
-        <div className='flex items-center'>
+        <div className='flex items-center mb-8'>
           <div onClick={() => setIsMobileMenuOpen(true)}>
             <SidebarToggle className='md:hidden mr-2' />
           </div>
@@ -75,7 +84,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-5xl mx-auto">
-          <Chat selectedModel={selectedModel} />
+          <WelcomeInput selectedModel={selectedModel} />
         </div>
       </main>
     </div>
