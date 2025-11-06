@@ -6,12 +6,16 @@ import ChatInput from './ChatInput';
 import ChatLoading from './ChatLoading';
 import { ApiClient } from '@/lib/api-client';
 import { ChatChunk, ChatCompleteChunk, ChatMessage, OllamaMessage } from '@/types/ollama-chat';
+import { useChatContext } from '@/contexts/ChatContext';
 
 interface ChatProps {
     selectedModel: string;
+    chatId?: string;
 }
 
 export default function Chat({ selectedModel }: ChatProps) {
+    const { triggerChatListRefresh } = useChatContext();
+    const [chatId, setChatId] = useState<string | undefined>(undefined);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isStreamingMode, setIsStreamingMode] = useState(true); // Enable streaming by default
@@ -39,13 +43,21 @@ export default function Chat({ selectedModel }: ChatProps) {
     }, [streamingMessage?.content]);
 
     const handleSendMessage = async (messageText: string) => {
+
+        // if it's a new chat, create a new Chat Id
+        if (!chatId && messages.length === 0) {
+            setChatId(crypto.randomUUID());
+        }
+
         // Add user message immediately
         console.log("Selected model:", selectedModel);
         const userMessage: ChatMessage = {
             id: crypto.randomUUID(),
+            chatId: chatId!,
             content: messageText,
             role: 'user',
-            createdAt: new Date()
+            createdAt: new Date().toISOString()
+
         };
 
         setMessages(prev => [...prev, userMessage]);
@@ -53,13 +65,13 @@ export default function Chat({ selectedModel }: ChatProps) {
 
         try {
             if (isStreamingMode) {
-
                 // Create initial streaming message
                 const initialStreamingMessage: ChatMessage = {
                     id: crypto.randomUUID(),
+                    chatId: chatId!,
                     content: '',
                     role: 'assistant',
-                    createdAt: new Date()
+                    createdAt: new Date().toISOString()
                 };
                 setStreamingMessage(initialStreamingMessage);
 
@@ -70,7 +82,8 @@ export default function Chat({ selectedModel }: ChatProps) {
                     {
                         messages: [...messages, userMessage],
                         model: selectedModel,
-                        stream: true
+                        stream: true,
+                        chatId: chatId!
                     },
                     (chunk) => {
                         accumulatedContent += chunk.message.content;
@@ -95,7 +108,8 @@ export default function Chat({ selectedModel }: ChatProps) {
                 const res = await ApiClient.chat({
                     messages: [...messages, userMessage],
                     model: selectedModel,
-                    stream: false
+                    stream: false,
+                    chatId: chatId!
                 });
 
                 console.log("Chat API response:", res);
@@ -141,12 +155,19 @@ export default function Chat({ selectedModel }: ChatProps) {
             // Non-streaming mode
             const assistantMessage: ChatMessage = {
                 id: crypto.randomUUID(),
+                chatId: chatId!,
                 content,
                 role: 'assistant',
-                createdAt: new Date()
+                createdAt: new Date().toISOString()
             };
             setMessages(prev => [...prev, assistantMessage]);
         }
+
+        // if this was the fist message in a new chat, notify that a new chat was created
+        if (messages.length === 1) {
+            triggerChatListRefresh();
+        }
+
 
         setIsLoading(false);
     };

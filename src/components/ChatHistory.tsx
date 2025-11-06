@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Chat } from '@/types/chat';
 import { ApiClient } from '@/lib/api-client';
 import { MessageCircle, Loader2 } from 'lucide-react';
+import { useChatContext } from '@/contexts/ChatContext';
 
 interface ChatListProps {
     isCollapsed?: boolean;
@@ -11,27 +12,38 @@ interface ChatListProps {
 }
 
 export default function ChatHistory({ isCollapsed = false, onSelectChat }: ChatListProps) {
+    const { onChatListRefresh } = useChatContext();
     const [chats, setChats] = useState<Chat[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchChats = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-                const fetchedChats = await ApiClient.getChats();
-                setChats(fetchedChats);
-            } catch (err) {
-                setError('Failed to load chats');
-                console.error('Error fetching chats:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const fetchChats = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const fetchedChats = await ApiClient.getChats();
+            setChats(fetchedChats);
+        } catch (err) {
+            setError('Failed to load chats');
+            console.error('Error fetching chats:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
+        // Initial fetch
         fetchChats();
-    }, []);
+
+        // Subscribe to chat list refresh events
+        const unsubscribe = onChatListRefresh(() => {
+            console.log('ChatHistory: Refreshing chat list');
+            fetchChats();
+        });
+
+        // Cleanup subscription on unmount
+        return unsubscribe;
+    }, [onChatListRefresh]);
 
     if (isLoading) {
         return (

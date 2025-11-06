@@ -23,7 +23,7 @@ export default function ChatMessages({ messages, streamingMessage }: ChatMessage
                     key={message.id}
                     message={message.content}
                     isUser={message.role === 'user'}
-                    timestamp={message.createdAt}
+                    timestamp={new Date(message.createdAt)}
                 />
             ))}
             {streamingMessage && (
@@ -31,7 +31,7 @@ export default function ChatMessages({ messages, streamingMessage }: ChatMessage
                     key={`streaming-${streamingMessage.id}`}
                     message={streamingMessage.content}
                     isUser={false}
-                    timestamp={streamingMessage.createdAt}
+                    timestamp={new Date(streamingMessage.createdAt)}
                     isStreaming={true}
                 />
             )}

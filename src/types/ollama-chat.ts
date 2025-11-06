@@ -40,9 +40,10 @@ export interface ChatCompleteChunk {
 
 export interface ChatMessage {
     id: string;
+    chatId: string;
     content: string;
     role: 'user' | 'assistant' | 'system';
-    createdAt: Date;
+    createdAt: string;
 }
 
 export type ChatChunk = ChatIntermediateChunk | ChatCompleteChunk;
