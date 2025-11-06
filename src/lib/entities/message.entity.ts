@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import type { ChatEntity } from "./chat.entity";
 
 export enum MessageSender {
@@ -6,10 +6,10 @@ export enum MessageSender {
     AI = "ai",
 }
 
-@Entity()
+@Entity({ name: "message" })
 export class MessageEntity {
 
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryColumn("uuid")
     id!: string
 
     @Column({ type: "text" })

@@ -3,7 +3,7 @@
 import { PanelRight } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import SidebarToggle from './SidebarToggle';
-import ChatList from './ChatList';
+import ChatHistory from './ChatHistory';
 import { Chat } from '@/types/chat';
 
 interface SidebarProps {
@@ -70,7 +70,7 @@ export default function Sidebar({
             )}
 
             {/* Chat History */}
-            <ChatList isCollapsed={isCollapsed} onSelectChat={onSelectChat} />
+            <ChatHistory isCollapsed={isCollapsed} onSelectChat={onSelectChat} />
 
             {/* Dark Mode Toggle */}
             <DarkModeToggle className={`mt-auto ${isCollapsed ? 'mt-auto' : 'ml-auto'}`} />

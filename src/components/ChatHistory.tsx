@@ -10,7 +10,7 @@ interface ChatListProps {
     onSelectChat?: (chat: Chat) => void;
 }
 
-export default function ChatList({ isCollapsed = false, onSelectChat }: ChatListProps) {
+export default function ChatHistory({ isCollapsed = false, onSelectChat }: ChatListProps) {
     const [chats, setChats] = useState<Chat[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

@@ -1,12 +1,15 @@
 export interface OllamaMessage {
     role: 'user' | 'assistant' | 'system';
     content: string
+    id: string;
+    createdAt: string;
 }
 
 export interface OllamaChatRequestBody {
     model: string;
     messages: OllamaMessage[];
     stream: boolean;
+    chatId: string;
 }
 
 export interface ChatIntermediateChunk {
@@ -46,6 +49,7 @@ export type ChatChunk = ChatIntermediateChunk | ChatCompleteChunk;
 
 export interface ChatApiResponse {
     success: true;
+    chatId: string;
     chunk: ChatChunk
 }
 

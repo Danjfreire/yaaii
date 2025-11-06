@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
-import { ChatApiError, ChatApiResponse, ChatChunk, OllamaChatRequestBody } from '@/types/ollama-chat';
+import { ChatApiError, ChatApiResponse, ChatChunk, OllamaChatRequestBody, OllamaMessage } from '@/types/ollama-chat';
+import { getRepository } from '@/lib/db/db-client';
+import { ChatEntity } from '@/lib/entities/chat.entity';
+import { MessageEntity } from '@/lib/entities/message.entity';
 
 export async function POST(request: Request) {
     try {
         // TODO: validate request body properly
         const body: OllamaChatRequestBody = await request.json();
         console.log('Received chat request body:', body);
+
+        // It's a new chat, create it in the database
+        if (body.messages.length === 1) {
+            const newChat = await createNewChat(body.chatId);
+            console.log('Created new chat with ID:', newChat.id);
+            body.chatId = newChat.id;
+        }
+
+        // TODO: schedule chat title generation for the chat
 
         if (body.stream) {
             return handleStreamingResponse(body);
@@ -40,9 +52,13 @@ async function handleNonStreamingResponse(body: OllamaChatRequestBody): Promise<
 
         const data = await response.json();
         const chatChunk: ChatChunk = data;
+        const lastMessage = body.messages[body.messages.length - 1];
+
+        await saveMessageToChat(body.chatId!, lastMessage);
 
         return NextResponse.json<ChatApiResponse>({
             success: true,
+            chatId: body.chatId!,
             chunk: chatChunk,
         });
     } catch (error) {
@@ -71,6 +87,9 @@ async function handleStreamingResponse(body: OllamaChatRequestBody): Promise<Res
             throw new Error(`Ollama API error: ${response.status}`);
         }
 
+        const lastMessage = body.messages[body.messages.length - 1];
+        let accumulatedMessage = '';
+
         // Create a ReadableStream that forwards Ollama's streaming response
         const stream = new ReadableStream({
             start(controller) {
@@ -80,32 +99,56 @@ async function handleStreamingResponse(body: OllamaChatRequestBody): Promise<Res
                     return;
                 }
 
-                // function pump(): Promise<void> {
-                //     return reader!.read().then(({ done, value }) => {
-                //         if (done) {
-                //             controller.close();
-                //             return;
-                //         }
-
-                //         // Forward the chunk to the client
-                //         controller.enqueue(value);
-                //         return pump();
-                //     });
-                // }
+                const decoder = new TextDecoder();
 
                 async function pump() {
-                    while (true) {
-                        const { done, value } = await reader!.read();
-                        if (done) break;
-                        controller.enqueue(value)
+                    try {
+                        while (true) {
+                            const { done, value } = await reader!.read();
+                            if (done) {
+                                // Stream is complete, save the accumulated message to database
+                                if (accumulatedMessage && body.chatId) {
+                                    await saveMessageToChat(body.chatId, lastMessage);
+                                    // TODO: schedule chat title generation for the chat
+                                    console.log('Message saved to database:', {
+                                        chatId: body.chatId,
+                                        messageLength: accumulatedMessage.length
+                                    });
+                                }
+                                break;
+                            }
+
+                            // Forward the chunk to the client
+                            controller.enqueue(value);
+
+                            // Parse and accumulate the message content from chunks
+                            const chunk = decoder.decode(value, { stream: true });
+                            const lines = chunk.split('\n');
+
+                            for (const line of lines) {
+                                if (line.trim()) {
+                                    try {
+                                        const parsed = JSON.parse(line);
+                                        if (parsed.message?.content) {
+                                            accumulatedMessage += parsed.message.content;
+                                        }
+                                    } catch (e) {
+                                        // Ignore parse errors for incomplete JSON
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error in stream pump:', error);
+                        throw error;
+                    } finally {
+                        controller.close();
                     }
-                    controller.close();
                 }
 
                 return pump();
             }
         });
-
 
         return new Response(stream, {
             headers: {
@@ -123,4 +166,28 @@ async function handleStreamingResponse(body: OllamaChatRequestBody): Promise<Res
             { status: 500 }
         );
     }
+}
+
+async function createNewChat(chatId: string) {
+    const repo = await getRepository(ChatEntity);
+
+    const newChat = repo.create();
+    newChat.id = chatId;
+    newChat.createdAt = new Date();
+    newChat.title = "New Chat";
+
+    return await repo.save(newChat);
+}
+
+async function saveMessageToChat(chatId: string, msg: OllamaMessage) {
+    const messageRepo = await getRepository(MessageEntity);
+
+    const newMessage = messageRepo.create();
+    newMessage.id = msg.id;
+    newMessage.content = msg.content;
+    newMessage.sender = msg.role;
+    newMessage.createdAt = new Date(msg.createdAt);
+    newMessage.chat = { id: chatId } as ChatEntity;
+
+    await messageRepo.save(newMessage);
 }
